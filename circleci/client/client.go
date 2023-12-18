@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/CircleCI-Public/circleci-cli/api"
 	"github.com/CircleCI-Public/circleci-cli/settings"
@@ -40,6 +41,10 @@ func New(config Config) (*Client, error) {
 	rootURL := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 
 	retryableClient := retryablehttp.NewClient()
+	retryableClient.Logger = nil
+	retryableClient.RetryWaitMin = 800 * time.Millisecond
+	retryableClient.RetryWaitMax = 1200 * time.Millisecond
+	retryableClient.Backoff = retryablehttp.LinearJitterBackoff
 	httpClient := retryableClient.StandardClient()
 
 	contexts, err := api.NewContextRestClient(settings.Config{
